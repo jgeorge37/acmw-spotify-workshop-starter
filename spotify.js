@@ -31,7 +31,7 @@ function generateRandomString(length) {
 
 // requests authorization
 function spotifyLogin(req, res) {
-  // store string of random numbers and letters in cookies to compare later
+  // store string of random numbers and letters in cookie to compare later
   const state = generateRandomString(16);
   res.cookie(STATE_KEY, state);
 
@@ -54,7 +54,7 @@ function spotifyLogin(req, res) {
 function spotifyCallback(req, res) {
   const code = req.query.code || null;  // authorization code from spotify that can be exchanged for an access token
   const state = req.query.state || null;  // the value of the state sent by spotify
-  const storedState = req.cookies ? req.cookies[STATE_KEY] : null;  // the state stored in cookies earlier
+  const storedState = req.cookies ? req.cookies[STATE_KEY] : null;  // the state stored in cookie earlier
 
   if (state === null || state !== storedState) {  // different state than stored indicates possible forgery
     res.redirect('/#' + stringify({error: 'state_mismatch'}));  // redirect to home
@@ -66,7 +66,7 @@ function spotifyCallback(req, res) {
       url: SPOTIFY_TOKEN_URL,
       form: {
         code: code,
-        redirect_uri: REDIRECT_URI,
+        redirect_uri: REDIRECT_URI,  // redirect to /callback
         grant_type: 'authorization_code'
       },
       headers: {
@@ -91,7 +91,10 @@ function spotifyCallback(req, res) {
   }
 }
 
+// called once the application has access token for Spotify API
+// gets user's recent top 5 songs
 function getUserData(req, res) {
+  // set up request info for top tracks
   const options = {
     url: SPOTIFY_API_BASE_URL + "/me/top/tracks?" + stringify({
       limit: 5,  // top 5
@@ -100,13 +103,16 @@ function getUserData(req, res) {
     headers: { 'Authorization': 'Bearer ' + req.session.accessToken },
     json: true
   };
+  // make request to spotify API for top tracks
   request.get(options, function(error, response, body) {
-    const topTracks = minifyItems(body.items);
-    req.session.topTracks = topTracks;
-    res.redirect('/profile');
+    const topTracks = minifyItems(body.items);  // get the important pieces of data from spotify response
+    req.session.topTracks = topTracks;  // store newly formatted data in session storage
+    res.redirect('/profile');  // redirect to profile page 
   })
 }
 
+// pulls values of interest from list of items
+// names of artists, albums, tracks
 function minifyItems(items) {
   const newItems = [];
   items.forEach((item) => {
