@@ -31,30 +31,19 @@ function generateRandomString(length) {
 
 // requests authorization
 function spotifyLogin(req, res) {
-  // store string of random numbers and letters in cookie to compare later
-  const state = generateRandomString(16);
-  res.cookie(STATE_KEY, state);
+  // TODO: store string of random numbers and letters in cookie to compare later
 
-  // define the scope of authorization being requested
-  const scope = "user-top-read";
+  // TODO: define the scope of authorization being requested
 
-  // send authorization request to spotify
-  res.redirect(SPOTIFY_AUTH_URL + "?" +
-    stringify({
-      response_type: 'code',
-      client_id: CLIENT_ID,
-      scope: scope,
-      redirect_uri: REDIRECT_URI,
-      state: state
-    }))
+  // TODO: redirect to spotify authorization
 }
 
 // called when spotify makes request to the /callback endpoint
 // requests access and refresh tokens
 function spotifyCallback(req, res) {
-  const code = req.query.code || null;  // authorization code from spotify that can be exchanged for an access token
-  const state = req.query.state || null;  // the value of the state sent by spotify
-  const storedState = req.cookies ? req.cookies[STATE_KEY] : null;  // the state stored in cookie earlier
+  const code = ""; // TODO: get authorization code from spotify that can be exchanged for an access token
+  const state = "";  // TODO: get the value of the state sent by spotify
+  const storedState = "";  // TODO: get the state stored in cookie earlier
 
   if (state === null || state !== storedState) {  // different state than stored indicates possible forgery
     res.redirect('/#' + stringify({error: 'state_mismatch'}));  // redirect to home
@@ -77,10 +66,8 @@ function spotifyCallback(req, res) {
     // send POST request to Spotify to get tokens
     request.post(authOptions, function(error, response, body) {
       if (!error && response.statusCode === 200) {  // if request successful
-        // get tokens from response and save in session storage
-        req.session.accessToken = body.access_token; 
-        req.session.refreshToken = body.refresh_token;
-        getUserData(req, res);
+        // TODO: get tokens from response and save in session storage
+        // TODO: get user-specific data (top tracks)
       } else {
         res.redirect('/#' +
           stringify({
@@ -94,21 +81,11 @@ function spotifyCallback(req, res) {
 // called once the application has access token for Spotify API
 // gets user's recent top 5 songs
 function getUserData(req, res) {
-  // set up request info for top tracks
-  const options = {
-    url: SPOTIFY_API_BASE_URL + "/me/top/tracks?" + stringify({
-      limit: 5,  // top 5
-      time_range: "short_term"  // about the last 4 weeks
-    }),
-    headers: { 'Authorization': 'Bearer ' + req.session.accessToken },
-    json: true
-  };
-  // make request to spotify API for top tracks
-  request.get(options, function(error, response, body) {
-    const topTracks = minifyItems(body.items);  // get the important pieces of data from spotify response
-    req.session.topTracks = topTracks;  // store newly formatted data in session storage
-    res.redirect('/profile');  // redirect to profile page 
-  })
+  // TODO: set up request info for top tracks
+  const options = {};
+  /*
+   TODO: make request to spotify API for top tracks, then minify, store in session, and redirect to /profile
+   */
 }
 
 // pulls values of interest from list of items

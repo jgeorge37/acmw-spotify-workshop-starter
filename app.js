@@ -24,10 +24,9 @@ app.get('/', function(req, res) {
 });
 
 app.get('/profile', function(req, res) {
-  const topTracks = req.session.topTracks;  // retrieve top tracks from session storage
-  res.render('profile', {  // render the profile view with the top tracks
-    tracks: topTracks
-  });
+  // TODO: retrieve top tracks from session storage
+  // TODO: render the profile view with the top tracks
+  res.render('profile');
 })
 
 app.get('/login', spotifyLogin);  // run spotifyLogin at /login
