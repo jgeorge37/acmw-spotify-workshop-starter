@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Stats</title>
+    <style type="text/css">
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        text-align: center;
+      }
+      ul {
+        list-style-type: none; /* Remove bullets */
+      }
+      li {
+        margin: 10px 0;
+      }
+      li .item-title {
+        font-weight: 600;
+        font-size: 20px;
+      }
+      li .item-subtitle {
+        color: #07DB1D;
+      }
+    </style>
+  </head>
+
+  <body>
+    <ul>
+      <% tracks.forEach((track) => { %>
+         <li><div>
+          <span class="item-title"><%= track['name'] %></span>
+          <br/>
+          <span class="item-subtitle"><%= track['artists'] %> - <%= track['album'] %> </span>
+         </div></li>
+      <% }); %> 
+    </ul>
+  </body>
+</html>

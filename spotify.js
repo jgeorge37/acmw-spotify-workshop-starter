@@ -5,15 +5,18 @@ https://github.com/spotify/web-api-auth-examples/blob/master/authorization_code/
 
 import { stringify } from 'querystring';
 import request from 'request';
-import { getUserData } from './spotify-data.js';
 
-const CLIENT_ID = "";  // your app's client ID
-const CLIENT_SECRET = "";  // your app's client secret
+
+const CLIENT_ID = process.env.CLIENT_ID;  // your app's client ID
+const CLIENT_SECRET = process.env.CLIENT_SECRET;  // your app's client secret
 const REDIRECT_URI = "http://localhost:8888/callback";  // your app's redirect URI
 
 const STATE_KEY = 'spotify_auth_state';
+
 const SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize";
 const SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
+const SPOTIFY_API_BASE_URL = "https://api.spotify.com/v1";
+
 
 // generates string of random numbers and letters
 function generateRandomString(length) {
@@ -33,7 +36,7 @@ function spotifyLogin(req, res) {
   res.cookie(STATE_KEY, state);
 
   // define the scope of authorization being requested
-  const scope = "";
+  const scope = "user-top-read";
 
   // send authorization request to spotify
   res.redirect(SPOTIFY_AUTH_URL + "?" +
@@ -48,7 +51,7 @@ function spotifyLogin(req, res) {
 
 // called when spotify makes request to the /callback endpoint
 // requests access and refresh tokens
-function requestTokens(req, res) {
+function spotifyCallback(req, res) {
   const code = req.query.code || null;  // authorization code from spotify that can be exchanged for an access token
   const state = req.query.state || null;  // the value of the state sent by spotify
   const storedState = req.cookies ? req.cookies[STATE_KEY] : null;  // the state stored in cookies earlier
@@ -72,23 +75,48 @@ function requestTokens(req, res) {
       json: true
     };
     // send POST request to Spotify to get tokens
-    const result = [];
     request.post(authOptions, function(error, response, body) {
       if (!error && response.statusCode === 200) {  // if request successful
-        // get tokens from response
-        const accessToken = body.access_token;
-        const refreshToken = body.refresh_token;
-        getUserData(accessToken);
-        res.redirect('/stats');
+        // get tokens from response and save in session storage
+        req.session.accessToken = body.access_token; 
+        req.session.refreshToken = body.refresh_token;
+        getUserData(req, res);
       } else {
         res.redirect('/#' +
-          querystring.stringify({
+          stringify({
             error: 'invalid_token'
           }));
       }
     })
-    return result;
   }
 }
 
-export {spotifyLogin, requestTokens};
+function getUserData(req, res) {
+  const options = {
+    url: SPOTIFY_API_BASE_URL + "/me/top/tracks?" + stringify({
+      limit: 5,  // top 5
+      time_range: "short_term"  // about the last 4 weeks
+    }),
+    headers: { 'Authorization': 'Bearer ' + req.session.accessToken },
+    json: true
+  };
+  request.get(options, function(error, response, body) {
+    const topTracks = minifyItems(body.items);
+    req.session.topTracks = topTracks;
+    res.redirect('/stats');
+  })
+}
+
+function minifyItems(items) {
+  const newItems = [];
+  items.forEach((item) => {
+    const newItem = {};
+    if (item['name']) newItem['name'] = item['name'];  // save name of item (track, artist, etc.)
+    if (item['album']) newItem['album'] = item['album']['name'];  // save album name
+    if (item['artists']) newItem['artists'] = minifyItems(item['artists']).flatMap(artist => artist['name']);  // save artist names
+    newItems.push(newItem);
+  })
+  return newItems;
+}
+
+export {spotifyLogin, spotifyCallback};
