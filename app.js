@@ -23,9 +23,9 @@ app.get('/', function(req, res) {
   res.render('index');
 });
 
-app.get('/stats', function(req, res) {
+app.get('/profile', function(req, res) {
   const topTracks = req.session.topTracks;
-  res.render('stats', {
+  res.render('profile', {
     tracks: topTracks
   });
 })

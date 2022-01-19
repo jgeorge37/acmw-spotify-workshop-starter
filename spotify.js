@@ -103,7 +103,7 @@ function getUserData(req, res) {
   request.get(options, function(error, response, body) {
     const topTracks = minifyItems(body.items);
     req.session.topTracks = topTracks;
-    res.redirect('/stats');
+    res.redirect('/profile');
   })
 }
 
