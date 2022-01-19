@@ -1,4 +1,5 @@
 # ACM-W Spotify API Workshop Project Example (Starter)
+This is an example project (with missing pieces) to demonstrate using Spotify's web API in a web application. A completed version can be found [here](https://github.com/jgeorge37/acmw-spotify-workshop-complete).
 
 ## Installation for local development
 0. Create a Spotify developer account and register a new application
